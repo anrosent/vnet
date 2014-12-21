@@ -86,13 +86,14 @@ class CLI(object):
         """
         seen_aliases = set()
         print('-'*80)
-        for cmd, (fun, parser) in self.cmds.items():
-            if cmd != 'help':
+        for cmd in sorted(self.cmds):
+            if cmd not in self.builtin_cmds:
                 if cmd not in seen_aliases:
                     if cmd in self.aliases:
                         seen_aliases.update(self.aliases[cmd])
                         cmd = '/'.join(self.aliases[cmd])
                     print(cmd)
+                    _, parser = self.cmds[cmd]
                     parser.print_usage()
                     print('-'*80)
 
