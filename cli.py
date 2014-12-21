@@ -63,7 +63,7 @@ class CLI(object):
                 p_args = parser.parse_args(args)
             except SystemExit:
                 return
-            callback(**dict(p_args._get_kwargs()))
+            callback(**dict(filter(lambda p:p[1] != None, p_args._get_kwargs())))
         else:
             self._invalid_cmd(command=cmd)
 

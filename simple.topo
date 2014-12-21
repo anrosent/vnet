@@ -1,3 +1,6 @@
-node A BroadcastNode 
-node B HiNode 
+node A nodes.BroadcastNode 
+node B nodes.HiNode 
+node C nodes.EchoNode
 A <-> B
+A <-> C
+B <-> C

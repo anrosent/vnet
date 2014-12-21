@@ -6,7 +6,7 @@ import selectors
 
 from threading import Thread
 import cli
-
+import nodes
 
 class NetTopology(object):
 
@@ -47,8 +47,14 @@ class NetNode(object):
         self.name  = name
         self.links = {}
         self.cli   = cli.CLI()
-        self.selector = selectors.DefaultSelector()
+        self.cli.add_func(lambda: print(self.links), 'links')
+        self.running = True
         self.init_cli()
+
+        self.selector = selectors.DefaultSelector()
+
+    def die(self):
+        self.running = False
 
     def get_name(self):
         return self.name
@@ -60,9 +66,9 @@ class NetNode(object):
     def handle_incoming(self, link):
         raise NotImplementedError
 
-    #TODO: select loop, calling overridden handleMsg function
+    # kill by sending control frame?
     def run(self):
-        while True:
+        while self.running:
             events = self.selector.select()
             for key, mask in events:
                 callback = key.data
@@ -74,42 +80,12 @@ class NetNode(object):
     def print(self, s):
         print("%s:%s" % (self.get_name(), s))
 
-class DebugNode(NetNode):
-
-    def __init__(self, name):
-        super().__init__(name)
-
-    def init_cli(self):
-        self.cli.add_func(lambda: print(self.links), 'links')
-
-
-class HiNode(NetNode):
-
-    def init_cli(self):
-        self.cli.add_func(self.broadcast_hi, 'hiall')
-        self.cli.add_func(lambda: print(self.links), 'links')
-
-    def broadcast_hi(self):
-        for name, link in self.links.items():
-            link.send('hi')
-    
-    def handle_incoming(self, link, mask):
-        msg = link.recv()
-        self.print("Got msg %s"%msg)
-
-class BroadcastNode(NetNode):
-    def init_cli(self):
-        self.cli.add_func(self.broadcast, 'msgcast', ('msg', {'help': 'message to send'}))
-        self.cli.add_func(lambda: print(self.links), 'links')
-
-    def broadcast(self, msg="hi"):
-        for name, link in self.links.items():
-            link.send(msg)
-    
-    def handle_incoming(self, link, mask):
-        msg = link.recv()
-        self.print("Got msg %s"%msg)
-
+def stop_network(nodes):
+    def executor():
+        print("Killing nodes and quitting..")
+        for node in nodes:
+            node.die()
+    return executor
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -123,6 +99,9 @@ if __name__ == '__main__':
     driver = cli.CLI()
     for node in topology.get_nodes():
         driver.add_cli(node.get_name(), node.get_cli())
+
+    # Graceful shutdown
+    driver.add_func(stop_network(topology.get_nodes()), ['q', 'quit'])
 
     # Activate virtual network
     node_threads = [Thread(target=node.run) for node in topology.get_nodes()]
