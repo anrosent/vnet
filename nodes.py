@@ -21,7 +21,7 @@ class HiNode(NetNode):
     
     def handle_incoming(self, link, mask):
         msg = link.recv()
-        self.print("Got msg %s"%msg)
+        self.debug("Got msg %s"%msg)
 
 class BroadcastNode(NetNode):
     def init_cli(self):
@@ -33,13 +33,13 @@ class BroadcastNode(NetNode):
     
     def handle_incoming(self, link, mask):
         msg = link.recv()
-        self.print("Got msg %s"%msg)
+        self.debug("Got msg %s"%msg)
 
 class EchoNode(NetNode):
     def handle_incoming(self, link, mask):
         msg = link.recv()
         link.send(msg)
-        self.print("Echoing %s" % msg)
+        self.debug("Echoing %s" % msg)
 
     def init_cli(self):
         pass
