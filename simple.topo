@@ -1,0 +1,3 @@
+node A BroadcastNode 
+node B HiNode 
+A <-> B
