@@ -24,7 +24,6 @@ class NetTopology(object):
                     else:
                         self._parse_link(line)
                 except ValueError as e:
-                    print(e)
                     print("Bad line '%s' in Topology File. Exiting." % line)
                     sys.exit(1)
     
@@ -77,7 +76,7 @@ class NetNode(object):
     def get_cli(self):
         return self.cli
 
-    def print(self, s):
+    def debug(self, s):
         print("%s:%s" % (self.get_name(), s))
 
 def stop_network(nodes):
