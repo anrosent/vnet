@@ -1,4 +1,4 @@
-from vnet import NetNode
+from core import NetNode
 
 class DebugNode(NetNode):
 
