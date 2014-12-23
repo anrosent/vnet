@@ -73,7 +73,7 @@ class NetNode(object):
         return self.cli
 
     def debug(self, s):
-        print("%s:%s" % (self.get_name(), s))
+        print("%s:%s:%s" % (type(self).__name__, self.get_name(), s))
 
 
 class NetLink(object):

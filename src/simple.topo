@@ -1,6 +1,5 @@
-node A nodes.BroadcastNode 
-node B nodes.HiNode 
-node C nodes.EchoNode
+node A nodes.FloodNode 
+node B nodes.FloodNode
+node C nodes.FloodNode
 A <-> B
-A <-> C
 B <-> C

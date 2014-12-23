@@ -35,6 +35,24 @@ class BroadcastNode(NetNode):
         msg = link.recv()
         self.debug("Got msg %s"%msg)
 
+class FloodNode(NetNode):
+    def init_cli(self):
+        self.cli.add_func(self.flood, 'flood', ('msg', {'help': 'numeric message to send', 'type':int}))
+
+    def flood(self, msg):
+        for name, link in self.links.items():
+            link.send(msg)
+
+    def handle_incoming(self, link, mask):
+        msg = link.recv()
+        self.debug("Got msg: %s" % msg)
+        new_msg = int(msg) - 1
+        if new_msg > 0:
+            for name, olink in self.links.items():
+                if link != olink.get_conn():
+                    olink.send(new_msg)
+
+
 class EchoNode(NetNode):
     def handle_incoming(self, link, mask):
         msg = link.recv()
