@@ -29,7 +29,7 @@ class NetTopology(object):
 
     def _parse_link(self, line):
         h1, h2 = line.split(' <-> ')
-        h1_con, h2_con = multiprocessing.Pipe()
+        h1_con, h2_con = NetLink.link_pair(h1, h2) 
         self.nodes[h1].add_link(h1_con, self.nodes[h2])
         self.nodes[h2].add_link(h2_con, self.nodes[h1])
 
@@ -56,7 +56,7 @@ class NetNode(object):
 
     def add_link(self, link, host):
         self.links[host.get_name()] = link 
-        self.selector.register(link, selectors.EVENT_READ, self.handle_incoming)
+        self.selector.register(link.get_conn(), selectors.EVENT_READ, self.handle_incoming)
 
     def handle_incoming(self, link):
         raise NotImplementedError
@@ -74,3 +74,25 @@ class NetNode(object):
 
     def debug(self, s):
         print("%s:%s" % (self.get_name(), s))
+
+
+class NetLink(object):
+
+    def __init__(self, connection, **kwargs):
+        self.cnx = connection
+
+    @classmethod
+    def link_pair(cls, host1, host2, **kwargs):
+        h1conn, h2conn = multiprocessing.Pipe()
+        h1toh2 = cls(h1conn, **kwargs)
+        h2toh1 = cls(h2conn, **kwargs)
+        return h1toh2, h2toh1
+
+    def get_conn(self):
+        return self.cnx
+
+    def send(self, msg):
+        self.cnx.send(msg)
+
+    def recv(self):
+        return self.cnx.recv()
