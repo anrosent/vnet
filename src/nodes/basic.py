@@ -1,28 +1,5 @@
 from core import NetNode
 
-class DebugNode(NetNode):
-
-    def __init__(self, name):
-        super().__init__(name)
-
-    def init_cli(self):
-        self.cli.add_func(lambda: print(self.links), 'links')
-
-
-class HiNode(NetNode):
-
-    def init_cli(self):
-        self.cli.add_func(self.broadcast_hi, 'hiall')
-        self.cli.add_func(lambda: print(self.links), 'links')
-
-    def broadcast_hi(self):
-        for name, link in self.links.items():
-            link.send('hi')
-    
-    def handle_incoming(self, link, mask):
-        msg = link.recv()
-        self.debug("Got msg %s"%msg)
-
 class BroadcastNode(NetNode):
     def init_cli(self):
         self.cli.add_func(self.broadcast, 'msgcast', ('msg', {'help': 'message to send', 'nargs':'?'}))
@@ -34,6 +11,23 @@ class BroadcastNode(NetNode):
     def handle_incoming(self, link, mask):
         msg = link.recv()
         self.debug("Got msg %s"%msg)
+
+class DebugNode(NetNode):
+
+    def __init__(self, name):
+        super().__init__(name)
+
+    def init_cli(self):
+        self.cli.add_func(lambda: print(self.links), 'links')
+
+class EchoNode(NetNode):
+    def handle_incoming(self, link, mask):
+        msg = link.recv()
+        link.send(msg)
+        self.debug("Echoing %s" % msg)
+
+    def init_cli(self):
+        pass
 
 class FloodNode(NetNode):
     def init_cli(self):
@@ -52,12 +46,17 @@ class FloodNode(NetNode):
                 if link != olink.get_conn():
                     olink.send(new_msg)
 
-
-class EchoNode(NetNode):
-    def handle_incoming(self, link, mask):
-        msg = link.recv()
-        link.send(msg)
-        self.debug("Echoing %s" % msg)
+class HiNode(NetNode):
 
     def init_cli(self):
-        pass
+        self.cli.add_func(self.broadcast_hi, 'hiall')
+        self.cli.add_func(lambda: print(self.links), 'links')
+
+    def broadcast_hi(self):
+        for name, link in self.links.items():
+            link.send('hi')
+    
+    def handle_incoming(self, link, mask):
+        msg = link.recv()
+        self.debug("Got msg %s"%msg)
+

@@ -1,5 +1,5 @@
-node A nodes.FloodNode 
-node B nodes.FloodNode
-node C nodes.FloodNode
+node A nodes.basic.FloodNode 
+node B nodes.basic.FloodNode
+node C nodes.basic.FloodNode
 A <-> B
 B <-> C

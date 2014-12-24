@@ -1,5 +1,7 @@
+import importlib
 import multiprocessing
 import selectors
+import pdb
 
 import cli
 
@@ -23,9 +25,10 @@ class NetTopology(object):
                     sys.exit(1)
     
     def _parse_node(self, line):
-        import nodes
         _, name, cls, *rest = line.split()
-        self.nodes[name] = eval(cls)(name, *rest)
+        mod_s, inst_s = cls.rsplit('.', 1)
+        mod = importlib.import_module(mod_s)
+        self.nodes[name] = eval('mod.%s' % inst_s)(name, *rest)
 
     def _parse_link(self, line):
         h1, h2 = line.split(' <-> ')
