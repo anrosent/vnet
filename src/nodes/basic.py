@@ -4,12 +4,11 @@ class BroadcastNode(NetNode):
     def init_cli(self):
         self.cli.add_func(self.broadcast, 'msgcast', ('msg', {'help': 'message to send', 'nargs':'?'}))
 
-    def broadcast(self, msg="hi"):
+    def broadcast(self, msg):
         for name, link in self.links.items():
             link.send(msg)
     
-    def handle_incoming(self, link, mask):
-        msg = link.recv()
+    def recv(self, msg, link):
         self.debug("Got msg %s"%msg)
 
 class DebugNode(NetNode):
@@ -21,8 +20,7 @@ class DebugNode(NetNode):
         self.cli.add_func(lambda: print(self.links), 'links')
 
 class EchoNode(NetNode):
-    def handle_incoming(self, link, mask):
-        msg = link.recv()
+    def recv(self, msg, link):
         link.send(msg)
         self.debug("Echoing %s" % msg)
 
@@ -37,8 +35,7 @@ class FloodNode(NetNode):
         for name, link in self.links.items():
             link.send(msg)
 
-    def handle_incoming(self, link, mask):
-        msg = link.recv()
+    def recv(self, msg, link):
         self.debug("Got msg: %s" % msg)
         new_msg = int(msg) - 1
         if new_msg > 0:
@@ -56,7 +53,6 @@ class HiNode(NetNode):
         for name, link in self.links.items():
             link.send('hi')
     
-    def handle_incoming(self, link, mask):
-        msg = link.recv()
+    def recv(self, msg, link):
         self.debug("Got msg %s"%msg)
 

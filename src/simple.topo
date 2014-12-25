@@ -1,5 +1,5 @@
-node A nodes.basic.FloodNode 
-node B nodes.basic.FloodNode
-node C nodes.basic.FloodNode
+node A nodes.routing.IpNode
+node B nodes.routing.IpNode
+node C nodes.routing.IpNode
 A <-> B
 B <-> C

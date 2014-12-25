@@ -5,6 +5,9 @@ import pdb
 
 import cli
 
+#TODO: rethink CLI library design
+#   - indirection too expensive, adding methods to call other CLIs and 
+#     flat help printout is smelly
 class NetTopology(object):
 
     def __init__(self, topo_fn):
@@ -45,7 +48,7 @@ class NetNode(object):
         self.name  = name
         self.links = {}
         self.cli   = cli.CLI()
-        self.cli.add_func(lambda: print(self.links), 'links')
+        self.cli.add_func(self.disp_links, 'links')
         self.running = True
         self.init_cli()
 
@@ -61,7 +64,11 @@ class NetNode(object):
         self.links[host.get_name()] = link 
         self.selector.register(link.get_conn(), selectors.EVENT_READ, self.handle_incoming)
 
-    def handle_incoming(self, link):
+    def handle_incoming(self, link, mask):
+        msg = link.recv()
+        self.recv(msg, link)
+
+    def recv(self, msg, link):
         raise NotImplementedError
 
     # kill by sending control frame?
@@ -75,27 +82,45 @@ class NetNode(object):
     def get_cli(self):
         return self.cli
 
+    def disp_links(self):
+        for ix, (host, link) in enumerate(sorted(self.links.items(), key=lambda p:p[0])):
+            self.debug("%s.) %s" % (ix, link))
+    
     def debug(self, s):
         print("%s:%s:%s" % (type(self).__name__, self.get_name(), s))
 
 
 class NetLink(object):
 
-    def __init__(self, connection, **kwargs):
+    def __init__(self, connection, h1, h2, **kwargs):
         self.cnx = connection
+        self.up  = True
+        self.h1 = h1
+        self.h2 = h2
 
     @classmethod
     def link_pair(cls, host1, host2, **kwargs):
         h1conn, h2conn = multiprocessing.Pipe()
-        h1toh2 = cls(h1conn, **kwargs)
-        h2toh1 = cls(h2conn, **kwargs)
+        h1toh2 = cls(h1conn, host1, host2, **kwargs)
+        h2toh1 = cls(h2conn, host2, host1, **kwargs)
         return h1toh2, h2toh1
 
     def get_conn(self):
         return self.cnx
 
     def send(self, msg):
-        self.cnx.send(msg)
+        if self.up:
+            self.cnx.send(msg)
 
     def recv(self):
-        return self.cnx.recv()
+        if self.up:
+            return self.cnx.recv()
+
+    def down(self):
+        self.up = False
+
+    def up(self):
+        self.up = True
+
+    def __str__(self):
+        return "%s -> %s [%s]" % (self.h1, self.h2, "up" if self.up else "down")
