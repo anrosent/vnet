@@ -6,7 +6,6 @@ anrosent
 
 This project is the start of a couple experiments I plan on doing in the realm of Distributed Systems over the 2014-2015 winter break. It is a lightweight network emulator, with nodes implemented as threads and a UNIX pipe link layer. This provides great visibility and control from the driver program, since all node state is shared with the driver. 
 
-It uses the ```cli.py``` library I recently made, and I'm going to try to figure out the proper way of distributing that so that dependency can be in a ```requirements.txt``` instead of a copy of the file sitting in this repo.
 
 ### Some Plans for This
 
